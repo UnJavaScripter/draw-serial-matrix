@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Serial Matrix</title>
+    <style>
+      body {
+        margin: 0;
+        display: flex;
+        place-items: center;
+        background-color: #444444;
+      }
+
+      main {
+        margin: 0 auto;
+        touch-action: none;
+      }
+
+      .matrix {
+        display: grid;
+        gap: 1px;
+        grid-template-columns: repeat(16, minmax(auto, 16%));
+        touch-action: none;
+      }
+
+      .pixel {
+        background-color: #222;
+        aspect-ratio: 1/ 1;
+        /* min-width: calc(calc(100vw / 16) - 1.1vw); */
+        width: calc(calc(100vh / 16) - 0.1vh);
+        max-width: 6.1vw;
+      }
+
+      .pixel:hover {
+        box-shadow: inset 0px 0px 0px 3px #d4d4d4;
+      }
+      .pixel:focus {
+        outline: none;
+        box-shadow: inset 0px 0px 0px 3px #c3bbbb;
+      }
+
+      .controls {
+        position: fixed;
+        right: 0;
+        top: 0;
+      }
+    </style>
+  </head>
+  <body>
+
+    <div class="controls">
+      <input type="color" name="color-picker" id="color-picker" value="#feeeaa" draggable="true">
+      <button type="button" id="clear-matrix">clear</button>
+    </div>
+    <main>
+      <div class="matrix">
+      </div>
+    </main>
+    
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
