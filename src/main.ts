@@ -132,7 +132,7 @@ export class PixelDraw {
   
   private _erase(elem: HTMLElement, x: number, y: number) {
     this.initiatingAction = PaintAction.ERASING
-
+    
     this._clearElem(elem)
     this._removeCoordsFromMap(x, y)
     this.lastErasedOn = `${x},${y}`
@@ -143,7 +143,7 @@ export class PixelDraw {
   }
   
   private _clearElem(elem: HTMLElement) {
-    elem.style.removeProperty('backgroundColor')
+    elem.style.removeProperty('background-color')
   }
 
   private _addCoordsToMap(x: number, y: number) {
