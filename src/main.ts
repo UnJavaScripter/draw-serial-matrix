@@ -22,7 +22,7 @@ export class PixelDraw {
 
   private _createListeners() {
     document.addEventListener('keydown', (e: KeyboardEvent) => {
-      if ((e.key === " " || e.key === "Enter") && (e.target as HTMLElement).tagName !== "BUTTON") {
+      if ((e.key === " " || e.key === "Enter") && ["BUTTON", "INPUT"].indexOf((e.target as HTMLElement).tagName) === -1) {
         e.preventDefault()
         this._handlePixelInteraction(<HTMLDivElement>e.target)
       }
@@ -48,8 +48,6 @@ export class PixelDraw {
     })
 
     this.matrixElem.addEventListener('pointercancel', (e: PointerEvent) => {
-      console.log(e.defaultPrevented);
-      console.log('cancel!!!!!!!!!!!!!!!!!!!!!!!!!!');
       this._handlePixelInteraction((e.target as HTMLDivElement))
       e.preventDefault()
 
@@ -72,7 +70,16 @@ export class PixelDraw {
       for (let j in iteratorArr) {
         const isPartOfDrawning = this.currentDrawing.get(`${i},${j}`) // the color for that coordinate || undefined
         matrixElemInnerHTML += `
-          <div class="pixel" tabindex="0" draggable="false" data-coords="${i},${j}" style="background-color: ${isPartOfDrawning || ''}"}></div>
+          <div
+            class="pixel"
+            tabindex="0"
+            role="gridcell"
+            draggable="false"
+            data-coords="${i},${j}"
+            aria-colindex="${i}"
+            aria-rowindex="${j}"
+            style="background-color: ${isPartOfDrawning || ''}"}
+          ></div>
         `
       }
     }
@@ -102,14 +109,11 @@ export class PixelDraw {
     } else { // regular pointer action
       if (this.currentDrawing.has(coordsString)) {
         if (elementPreviousColor === this.selectedColor) {
-          console.log('erase');
           this._erase(elem, +coordsX, +coordsY)
         } else {
-          console.log('draw on top');
           this._draw(elem, +coordsX, +coordsY)
         }
       } else {
-        console.log('draw');
         this._draw(elem, +coordsX, +coordsY)
       }
 
@@ -139,12 +143,11 @@ export class PixelDraw {
   }
   
   private _clearElem(elem: HTMLElement) {
-    elem.style.backgroundColor = ''
+    elem.style.removeProperty('backgroundColor')
   }
 
   private _addCoordsToMap(x: number, y: number) {
     this.currentDrawing.set(`${x},${y}`, this.colorPickerElem.value)
-    console.log(this.currentDrawing);
   }
 
   private _removeCoordsFromMap(x: number, y: number) {
