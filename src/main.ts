@@ -86,7 +86,7 @@ export class PixelDraw {
     }
 
     this.matrixElem.innerHTML = matrixElemInnerHTML
-    this.matrixElem.setAttribute('aria-colcount', this.matrixSideLength)
+    this.matrixElem.setAttribute('aria-colcount', String(this.matrixSideLength))
   }
 
   private _handlePixelInteraction(elem: HTMLElement) {
