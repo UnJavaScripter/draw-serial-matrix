@@ -1,3 +1,5 @@
+import { serialHandler } from './serial-handler.js'
+
 enum PaintAction {
   "DRAWING",
   "ERASING",
@@ -10,6 +12,7 @@ export class PixelDraw {
   colorPickerElem: HTMLInputElement = <HTMLInputElement>document.querySelector("#color-picker")
   matrixElem: HTMLDivElement = <HTMLDivElement>document.querySelector(".matrix")
   clearBtnElem: HTMLButtonElement = <HTMLButtonElement>document.querySelector("#clear-matrix")
+  connectBtnElem: HTMLButtonElement = <HTMLButtonElement>document.querySelector("#connect-matrix")
   matrixSideLength: number
   currentDrawing = new Map()
   selectedColor: string = this.colorPickerElem.value
@@ -33,6 +36,11 @@ export class PixelDraw {
       this._handlePixelInteraction((e.target as HTMLDivElement))
     })
 
+    this.connectBtnElem.addEventListener('pointerdown', async (e: PointerEvent) => {
+      e.preventDefault()
+      await serialHandler.init()
+    })
+
     this.matrixElem.addEventListener('pointerup', () => {
       if (this.draggingPointer) {
         this.draggingPointer = false
@@ -46,15 +54,8 @@ export class PixelDraw {
         this._handlePixelInteraction((e.target as HTMLDivElement))
       }
     })
-
-    this.matrixElem.addEventListener('pointercancel', (e: PointerEvent) => {
-      this._handlePixelInteraction((e.target as HTMLDivElement))
-      e.preventDefault()
-
-
-    })
-
-    this.colorPickerElem.addEventListener('change', (e: Event) => {
+    
+    this.colorPickerElem.addEventListener('input', (e: Event) => {
       this.selectedColor = (e.target as HTMLInputElement).value
     })
 
@@ -85,6 +86,7 @@ export class PixelDraw {
     }
 
     this.matrixElem.innerHTML = matrixElemInnerHTML
+    this.matrixElem.setAttribute('aria-colcount', this.matrixSideLength)
   }
 
   private _handlePixelInteraction(elem: HTMLElement) {
@@ -118,16 +120,17 @@ export class PixelDraw {
       }
 
     }
-
-      
   }
 
-  private _draw(elem: HTMLElement, x: number, y: number) {
+  private async _draw(elem: HTMLElement, x: number, y: number) {
     this.initiatingAction = PaintAction.DRAWING
 
     this._paintElem(elem)
     this._addCoordsToMap(x, y)
     this.lastDrawnOn = `${x},${y}`
+    const data = [1, this.getPixelNumber(x, y), ...this.hexToRgb(this.selectedColor)]
+    
+    serialHandler.write(JSON.stringify(data))
   }
   
   private _erase(elem: HTMLElement, x: number, y: number) {
@@ -136,6 +139,10 @@ export class PixelDraw {
     this._clearElem(elem)
     this._removeCoordsFromMap(x, y)
     this.lastErasedOn = `${x},${y}`
+
+    const data = [0, this.getPixelNumber(x, y), 0, 0, 0]
+    
+    serialHandler.write(JSON.stringify(data))
   }
 
   private _paintElem(elem: HTMLElement) {
@@ -157,8 +164,26 @@ export class PixelDraw {
   private _clearMatrix() {
     this.currentDrawing = new Map()
     this._generateMatrix(this.matrixSideLength)
+    serialHandler.write(JSON.stringify([2,0,0,0]))
   }
 
+  private getPixelNumber(x: number, y: number) {
+    if (x % 2 === 0) {
+      return (this.matrixSideLength * x) + (15 - y)
+    } else {
+      return (this.matrixSideLength * x) + y 
+    }
+  }
+  
+  hexToRgb(hex: string) {
+    const hexVal = hex.charAt(0) === '#' ? hex.slice(1) : hex
+    const arrBuffer = new ArrayBuffer(4)
+    const dv = new DataView(arrBuffer)
+    dv.setUint32(0, parseInt(hexVal, this.matrixSideLength) ,false)
+    const arrByte = new Uint8Array(arrBuffer)
+  
+    return [arrByte[1],  arrByte[2], arrByte[3]]
+  }
 }
 
 new PixelDraw(16)
