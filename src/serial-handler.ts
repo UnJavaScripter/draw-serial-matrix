@@ -7,6 +7,7 @@ class SerialHandler {
     writer!: WritableStreamDefaultWriter;
     encoder = new TextEncoder();
     decoder = new TextDecoder();
+    port! : any;
 
     /**
      * Triggers the menu where the user will pick a device (it requires an user interaction to be triggered).
@@ -16,14 +17,11 @@ class SerialHandler {
     async init() {
         if ('serial' in navigator) {
             try {
-                const port = await (navigator as any).serial.requestPort();
-                await port.open({ baudRate: 9600 }); // `baudRate` was `baudrate` in previous versions.
+                this.port = await (navigator as any).serial.requestPort();
+                await this.port.open({ baudRate: 9600 }); // `baudRate` was `baudrate` in previous versions.
 
-                this.writer = port.writable.getWriter();
-                this.reader = port.readable.getReader();
-
-                const signals = await port.getSignals();
-                console.log(signals);
+                this.writer = this.port.writable.getWriter();
+                this.reader = this.port.readable.getReader();
             } catch (err) {
                 console.error('There was an error opening the serial port:', err);
             }

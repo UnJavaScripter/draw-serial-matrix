@@ -129,8 +129,9 @@ export class PixelDraw {
     this._addCoordsToMap(x, y)
     this.lastDrawnOn = `${x},${y}`
     const data = [1, this.getPixelNumber(x, y), ...this.hexToRgb(this.selectedColor)]
-    
-    serialHandler.write(JSON.stringify(data))
+    if (serialHandler.port) {
+      serialHandler.write(JSON.stringify(data))
+    }
   }
   
   private _erase(elem: HTMLElement, x: number, y: number) {
@@ -141,8 +142,9 @@ export class PixelDraw {
     this.lastErasedOn = `${x},${y}`
 
     const data = [0, this.getPixelNumber(x, y), 0, 0, 0]
-    
-    serialHandler.write(JSON.stringify(data))
+    if (serialHandler.port) {
+      serialHandler.write(JSON.stringify(data))
+    }
   }
 
   private _paintElem(elem: HTMLElement) {
@@ -164,7 +166,9 @@ export class PixelDraw {
   private _clearMatrix() {
     this.currentDrawing = new Map()
     this._generateMatrix(this.matrixSideLength)
-    serialHandler.write(JSON.stringify([2,0,0,0]))
+    if (serialHandler.port) {
+      serialHandler.write(JSON.stringify([2,0,0,0]))
+    }
   }
 
   private getPixelNumber(x: number, y: number) {
